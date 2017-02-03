@@ -1,42 +1,45 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
 
-use Blog\Controller\BlogController;
-use Blog\Controller\MessageController;
+date_default_timezone_set( $app['timezone'] );
 
-$app = new Silex\Application();
+// Define requirements
 
-$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
-    'db.options' => array(
-        'driver' => 'pdo_mysql',
-        'dbname' => 'silex',
-        'user'   => 'root',
-        'password' => '',
-        'host'   => 'localhost',
-    ),
-));
+use Silex\Provider\HttpCacheServiceProvider;
+use Silex\Provider\TwigServiceProvider;
+use Silex\Provider\DoctrineServiceProvider;
+use Silex\Provider\SessionServiceProvider;
+use Silex\Provider\MonologServiceProvider;
 
-$app->register(new \Blog\Provider\MessageRepositoryProvider());
+// Get Routes
 
-$app->register(new \Blog\Provider\MessageServiceProvider());
+require PATH_APP . '/routes.php';
 
-$app->register(new Silex\Provider\TwigServiceProvider(), array(
-    'twig.path' => __DIR__ . '/../views',
-));
+// Registers services
 
-$app['message.controller'] = function() use($app) {
-     return new MessageController($app['twig'], $app['blog.message.service']);
- };
- 
-/**
- * Nécessaire pour déclarer des controllers
- */
-$app->register(new Silex\Provider\ServiceControllerServiceProvider());
+if ( $app['cache.enable'] === true ) {
+	$app->register(new HttpCacheServiceProvider([
+		'http_cache.cache_dir' => PATH_ROOT . '/var/cache/http/'
+	]));
+}
 
-$app['blog.controller'] = function() use($app) {
-    return new BlogController($app['twig'], $app['blog.message.service']);
-};
+if ( $app['db.enable'] === true ) {
+	$app->register(new DoctrineServiceProvider());
+}
 
-include __DIR__ . '/routing.php';
+$app->register(new SessionServiceProvider());
 
-return $app;
+$app->register(new TwigServiceProvider(), [
+	'twig.options' => [
+		'cache'            => $app['cache.enable'],
+		'strict_variables' => true
+	],
+	'twig.path'    => [PATH_APP . '/views/']
+]);
+
+$app->register(new MonologServiceProvider(), [
+	'monolog.name'    => 'APP',
+	'monolog.level'   => 300, // Warning
+	'monolog.logfile' => PATH_ROOT . '/var/log/' . $app['environment'] . '.log'
+]);
+
+$app['session']->start();
