@@ -1,0 +1,15 @@
+{% extends "layout.twig.html" %}
+
+{% block content %}
+
+    <h1>Ajout d'un message</h1>
+
+    <form method="post" action="/messages/add">
+        <div class="form-group">
+            <label for="text">Texte</label>
+            <textarea class="form-control" rows="3" id="text" name="message[text]"></textarea>
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+    </form>
+
+{% endblock %}
