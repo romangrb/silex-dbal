@@ -28,11 +28,11 @@ class CRUDService
         return $this->messageRepository->fetch($id);
     }
     
-    public function add(Message $message) {
+    public function add(Message $crud) {
             $sql = "INSERT INTO $this->table (name)VALUES(?)";
             $stmt = $this->connection->prepare($sql);
-            $stmt->bindValue(1, $message->getText());
-            $stmt->bindValue(2, $message->getDate());
+            $stmt->bindValue(1, $crud->getText());
+            $stmt->bindValue(2, $crud->getDate());
             $stmt->execute();
         }
         
@@ -43,12 +43,12 @@ class CRUDService
             $stmt->execute();
       }
 
-       public function update(Message $message) {
+       public function update(Message $crud) {
             $sql = "UPDATE $this->table SET name =? WHERE id=?";
             $stmt = $this->connection->prepare($sql);
-            $stmt->bindValue(1, $message->getText());
-            $stmt->bindValue(2, $message->getDate());
-            $stmt->bindValue(3, $message->getId());
+            $stmt->bindValue(1, $crud->getText());
+            $stmt->bindValue(2, $crud->getDate());
+            $stmt->bindValue(3, $crud->getId());
             $stmt->execute();
         }
 } 

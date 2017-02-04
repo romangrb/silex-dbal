@@ -14,7 +14,7 @@ class CRUDRepositoryProvider implements ServiceProviderInterface
      */
     public function register(Container $app)
     {
-        $app["blog.message.repository"] = function ($app) {
+        $app["app.crud.repository"] = function ($app) {
             if(!isset($app['db'])) {
                 throw new LogicException('You must register the DoctrineServiceProvider to use the MessageRepositoryProvider');
             }

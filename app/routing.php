@@ -1,8 +1,8 @@
 <?php
-$app->get('/', "blog.controller:homeAction");
+$app->get('/', "app.controller:homeAction");
 
-$app->post('/messages/add', "message.controller:addAction");
-$app->get('/messages/delete/{id}', "message.controller:deleteAction");
-$app->get('/messages/edit/{id}', "message.controller:editAction");
-$app->get('/messages/new', "message.controller:newAction");
-$app->post('/messages/update', "message.controller:updateAction");
+$app->post('/messages/add', "crud.controller:addAction");
+$app->get('/messages/delete/{id}', "crud.controller:deleteAction");
+$app->get('/messages/edit/{id}', "crud.controller:editAction");
+$app->get('/messages/new', "crud.controller:newAction");
+$app->post('/messages/update', "crud.controller:updateAction");

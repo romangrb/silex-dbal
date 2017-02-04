@@ -51,14 +51,14 @@ class CRUDRepository
 
     protected function hydrateRowData(array $row)
     {
-        $message = new Message();
+        $crud = new Message();
 
         foreach(self::$MAPPING as $fieldName => $method) {
-            if(array_key_exists($fieldName, $row) && method_exists($message, $method)) {
-                call_user_func(array($message, $method), $row[$fieldName]);
+            if(array_key_exists($fieldName, $row) && method_exists($crud, $method)) {
+                call_user_func(array($crud, $method), $row[$fieldName]);
             }
         }
 
-        return $message;
+        return $crud;
     }
 } 

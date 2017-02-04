@@ -26,14 +26,14 @@ $app->register(new \MainApp\Provider\CRUDRepositoryProvider());
 
 $app->register(new \MainApp\Provider\CRUDServiceProvider());
 
-$app['message.controller'] = function() use($app) {
-     return new MessageController($app['blog.message.service']);
+$app['crud.controller'] = function() use($app) {
+     return new MessageController($app['app.crud.service']);
  };
  
 $app->register(new Silex\Provider\ServiceControllerServiceProvider());
 
-$app['blog.controller'] = function() use($app) {
-    return new AppController($app['blog.message.service']);
+$app['app.controller'] = function() use($app) {
+    return new AppController($app['app.crud.service']);
 };
 
 include __DIR__ . '/routing.php';
