@@ -1,0 +1,29 @@
+{% extends "layout.twig.html" %}
+
+{% block content %}
+
+    <h1>Accueil du microblog</h1>
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+    {% if messages %}
+        {% for message in messages %}
+            <article>
+                <p>{{ message.text }}</p>
+                <p>écrit le <time datetime="{{ message.date }}">{{ message.date|date("d/m/Y") }}</time> </p>
+                <div>
+                    <a class="btn btn-warning" href="/messages/edit/{{ message.id }}" role="button">Modifier</a>
+                    <a class="btn btn-danger" href="/messages/delete/{{ message.id }}" role="button">Supprimer</a>
+                </div>
+            </article>
+        {%  endfor %}
+
+    {% else %}
+        <p>Aucun message.</p>
+    {%  endif %}
+        </div>
+        <div class="panel-footer">
+            <a class="btn btn-default" href="/messages/new" role="button">Ajouter un message</a>
+        </div>
+    </div>
+{% endblock %}

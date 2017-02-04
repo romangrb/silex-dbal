@@ -1,45 +1,46 @@
 <?php
 
-date_default_timezone_set( $app['timezone'] );
+require_once __DIR__ . '/../vendor/autoload.php';
 
-// Define requirements
 
-use Silex\Provider\HttpCacheServiceProvider;
-use Silex\Provider\TwigServiceProvider;
-use Silex\Provider\DoctrineServiceProvider;
-use Silex\Provider\SessionServiceProvider;
-use Silex\Provider\MonologServiceProvider;
+use Blog\Controller\BlogController;
+use Blog\Controller\MessageController;
 
-// Get Routes
+$app = new Silex\Application();
 
-require PATH_APP . '/routes.php';
+$app->register(new Silex\Provider\MonologServiceProvider(), array(
+    'monolog.logfile' => __DIR__.'/log_info.log',
+));
 
-// Registers services
+$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
+    'db.options' => array(
+        'driver' => 'pdo_mysql',
+        'dbname' => 'silex',
+        'user'   => 'root',
+        'password' => '',
+        'host'   => 'localhost',
+    ),
+));
 
-if ( $app['cache.enable'] === true ) {
-	$app->register(new HttpCacheServiceProvider([
-		'http_cache.cache_dir' => PATH_ROOT . '/var/cache/http/'
-	]));
-}
+$app->register(new \Blog\Provider\MessageRepositoryProvider());
 
-if ( $app['db.enable'] === true ) {
-	$app->register(new DoctrineServiceProvider());
-}
+$app->register(new \Blog\Provider\MessageServiceProvider());
 
-$app->register(new SessionServiceProvider());
+$app->register(new Silex\Provider\TwigServiceProvider(), array(
+    'twig.path' => __DIR__ . '/../views',
+));
 
-$app->register(new TwigServiceProvider(), [
-	'twig.options' => [
-		'cache'            => $app['cache.enable'],
-		'strict_variables' => true
-	],
-	'twig.path'    => [PATH_APP . '/views/']
-]);
+$app['message.controller'] = function() use($app) {
+     return new MessageController($app['twig'], $app['blog.message.service']);
+ };
+ 
+$app->register(new Silex\Provider\ServiceControllerServiceProvider());
 
-$app->register(new MonologServiceProvider(), [
-	'monolog.name'    => 'APP',
-	'monolog.level'   => 300, // Warning
-	'monolog.logfile' => PATH_ROOT . '/var/log/' . $app['environment'] . '.log'
-]);
+$app['blog.controller'] = function() use($app) {
+    return new BlogController($app['twig'], $app['blog.message.service']);
+};
 
-$app['session']->start();
+include __DIR__ . '/routing.php';
+
+
+return $app;
