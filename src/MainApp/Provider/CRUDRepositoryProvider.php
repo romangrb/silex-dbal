@@ -1,13 +1,13 @@
 <?php
 
-namespace Blog\Provider;
+namespace MainApp\Provider;
 
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use \LogicException;
-use Blog\Repository\MessageRepository;
+use MainApp\Repository\CRUDRepository;
 
-class MessageRepositoryProvider implements ServiceProviderInterface
+class CRUDRepositoryProvider implements ServiceProviderInterface
 {
     /**
      * @inheritDoc
@@ -19,7 +19,7 @@ class MessageRepositoryProvider implements ServiceProviderInterface
                 throw new LogicException('You must register the DoctrineServiceProvider to use the MessageRepositoryProvider');
             }
 
-            return new MessageRepository($app['db']);
+            return new CRUDRepository($app['db']);
         };
     }
 

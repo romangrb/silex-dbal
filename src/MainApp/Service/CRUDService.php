@@ -1,11 +1,11 @@
 <?php
-namespace Blog\Service;
+namespace MainApp\Service;
 
-use Blog\Repository\MessageRepository;
+use MainApp\Repository\CRUDRepository;
 use Doctrine\DBAL\Connection;
-use Blog\Entity\Message;
+use MainApp\Entity\Message;
 
-class MessageService
+class CRUDService
 {
     protected $connection;
 
@@ -13,14 +13,15 @@ class MessageService
     
     protected $table;
     
-    public function __construct(Connection $connection, MessageRepository $messageRepository) {
+    public function __construct(Connection $connection) {
         $this->connection = $connection;
         $this->messageRepository = $messageRepository;
         $this->table = 'test';
     }
 
     public function fetchAll() {
-        return $this->messageRepository->fetchAll();
+        // return $this->messageRepository->fetchAll();
+        return 123;
     }
     
      public function fetch($id) {

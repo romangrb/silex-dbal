@@ -1,6 +1,6 @@
 <?php
 
-namespace Blog\Entity;
+namespace MainApp\Entity;
 
 
 class Message

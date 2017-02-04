@@ -1,12 +1,12 @@
 <?php
 
-namespace Blog\Repository;
+namespace MainApp\Repository;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Connection;
-use Blog\Entity\Message;
+use MainApp\Entity\Message;
 
-class MessageRepository
+class CRUDRepository
 {
     
     private $connection;
@@ -27,8 +27,9 @@ class MessageRepository
 
     public function fetchAll()
     {
-        $sql = "SELECT * FROM $this->table";
-        return $this->hydrateAllData($this->connection->fetchAll($sql));
+        return 'zz';
+        // $sql = "SELECT * FROM $this->table";
+        // return $this->hydrateAllData($this->connection->fetchAll($sql));
     }
 
     public function fetch($id)
