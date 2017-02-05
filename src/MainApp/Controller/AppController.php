@@ -11,16 +11,23 @@ class AppController
     
     protected $crudService;
     
+    private $per_page = 3;
+    
     public function __construct( CRUDService $CRUDService ) {
         $this->crudService = $CRUDService;
         $this->toJSON = $JsonResponse;
     }
-
+    
     public function getAll() {
 
         $result = $this->crudService->fetchAll();
         return new JsonResponse(array('all'=>$result));
         
+    }
+    
+    protected function getStartPage ($cur_page){
+        if ( $cur_page < 1 ) $cur_page = 1;
+        return ($cur_page - 1) * $this->per_page;
     }
     
     public function getTop() {
@@ -32,7 +39,9 @@ class AppController
     
     public function getPage( $num ) {
         
-        $result = $this->crudService->getPage($num);
+        $begin  = $this->getStartPage( $num );
+        $result = $this->crudService->getPage( $begin, $this->per_page );
+        
         return new JsonResponse($result);
         
     }

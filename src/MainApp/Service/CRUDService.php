@@ -11,50 +11,60 @@ class CRUDService
 
     protected $crudRepository;
     
-    protected $table;
+    protected $tables;
     
     public function __construct(connection $connection, crudRepository $crudRepository) {
         $this->con = $connection;
         $this->crudRepository = $crudRepository;
-        $this->table = 'test';
+        $this->tables = array('first' =>'first_name',
+                              'second'=>'last_name',
+                              'third' =>'full_name'
+                            );
     }
 
     public function fetchAll() {
-        return $this->crudRepository->fetchAll();
+        $sql = "SELECT * FROM $this->tables['first']";
+        return $this->con->fetchAssoc($sql);
     }
     
-    public function getPage( $num ) {
-        // $sql = "SELECT * FROM $this->table LIMIT 20";
-        // return $this->con->fetchAssoc($sql); 
-        return 20;
+    public function getPage( $offset, $limit ) {
+        $sql = "SELECT * FROM {$this->tables['first']} LIMIT $offset, $limit";
+        return $this->con->fetchAll($sql); 
     }
     
-    
-    public function fetch($id) {
-        return $this->crudRepository->fetch($id);
+    public function addFullName( $offset, $limit ) {
+        $sql = "INSERT INTO $this->tables['first'] (name)VALUES(?)";
+        $stmt = $this->con->prepare($sql);
+        $stmt->bindValue(1, $crud->getText());
+        $stmt->bindValue(2, $crud->getDate());
+        $stmt->execute();
     }
     
-    public function add(Message $crud) {
-            $sql = "INSERT INTO $this->table (name)VALUES(?)";
-            $stmt = $this->con->prepare($sql);
-            $stmt->bindValue(1, $crud->getText());
-            $stmt->bindValue(2, $crud->getDate());
-            $stmt->execute();
-        }
+    // public function fetch($id) {
+    //     return $this->crudRepository->fetch($id);
+    // }
+    
+    // public function add(Message $crud) {
+    //         $sql = "INSERT INTO $this->tables['first'] (name)VALUES(?)";
+    //         $stmt = $this->con->prepare($sql);
+    //         $stmt->bindValue(1, $crud->getText());
+    //         $stmt->bindValue(2, $crud->getDate());
+    //         $stmt->execute();
+    //     }
         
-      public function delete($id) {
-            $sql = "DELETE FROM $this->table WHERE id=?";
-            $stmt = $this->con->prepare($sql);
-            $stmt->bindValue(1, $id);
-            $stmt->execute();
-      }
+    //   public function delete($id) {
+    //         $sql = "DELETE FROM $this->tables['first'] WHERE id=?";
+    //         $stmt = $this->con->prepare($sql);
+    //         $stmt->bindValue(1, $id);
+    //         $stmt->execute();
+    //   }
 
-       public function update(Message $crud) {
-            $sql = "UPDATE $this->table SET name =? WHERE id=?";
-            $stmt = $this->con->prepare($sql);
-            $stmt->bindValue(1, $crud->getText());
-            $stmt->bindValue(2, $crud->getDate());
-            $stmt->bindValue(3, $crud->getId());
-            $stmt->execute();
-        }
+    //   public function update(Message $crud) {
+    //         $sql = "UPDATE $this->tables['first'] SET name =? WHERE id=?";
+    //         $stmt = $this->con->prepare($sql);
+    //         $stmt->bindValue(1, $crud->getText());
+    //         $stmt->bindValue(2, $crud->getDate());
+    //         $stmt->bindValue(3, $crud->getId());
+    //         $stmt->execute();
+    //     }
 } 
