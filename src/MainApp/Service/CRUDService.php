@@ -1,7 +1,6 @@
 <?php
 namespace MainApp\Service;
 
-use MainApp\Repository\CRUDRepository;
 use Doctrine\DBAL\connection;
 use MainApp\Entity\Message;
 
@@ -13,9 +12,9 @@ class CRUDService
     
     protected $tables;
     
-    public function __construct(connection $connection, crudRepository $crudRepository) {
+    public function __construct(connection $connection) {
         $this->con = $connection;
-        $this->crudRepository = $crudRepository;
+      
         $this->tables = array('first' =>'first_name',
                               'second'=>'last_name',
                               'third' =>'full_name'
@@ -30,6 +29,13 @@ class CRUDService
     public function getPage( $offset, $limit ) {
         $sql = "SELECT * FROM {$this->tables['first']} LIMIT $offset, $limit";
         return $this->con->fetchAll($sql); 
+    }
+    
+    public function addFirstName( $name ) {
+        $sql = "INSERT INTO {$this->tables['first']} (value) VALUES(?)";
+        $stmt = $this->con->prepare($sql);
+        $stmt->bindValue(1, $name);
+        $stmt->execute();
     }
     
     public function addFullName( $offset, $limit ) {

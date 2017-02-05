@@ -25,18 +25,6 @@ class AppController
         
     }
     
-    protected function getStartPage ($cur_page){
-        if ( $cur_page < 1 ) $cur_page = 1;
-        return ($cur_page - 1) * $this->per_page;
-    }
-    
-    public function getTop() {
-        
-        $result = $this->crudService->getLimitRows();
-        return new JsonResponse($result);
-        
-    }
-    
     public function getPage( $num ) {
         
         $begin  = $this->getStartPage( $num );
@@ -44,6 +32,20 @@ class AppController
         
         return new JsonResponse($result);
         
+    }
+    
+    public function addName( $name ) {
+        
+        $result = $this->crudService->addFirstName( $name );
+        
+        return new JsonResponse($result);
+        
+    }
+    
+    
+    protected function getStartPage ($cur_page){
+        if ( $cur_page < 1 ) $cur_page = 1;
+        return ($cur_page - 1) * $this->per_page;
     }
     
 }
