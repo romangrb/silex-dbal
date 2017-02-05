@@ -2,9 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-
 use MainApp\Controller\AppController;
-use MainApp\Controller\CRUDController;
 
 $app = new Silex\Application();
 
@@ -26,10 +24,6 @@ $app->register(new \MainApp\Provider\CRUDRepositoryProvider());
 
 $app->register(new \MainApp\Provider\CRUDServiceProvider());
 
-$app['crud.controller'] = function() use($app) {
-     return new MessageController($app['app.crud.service']);
- };
- 
 $app->register(new Silex\Provider\ServiceControllerServiceProvider());
 
 $app['app.controller'] = function() use($app) {

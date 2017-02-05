@@ -9,56 +9,32 @@ use MainApp\Entity\Message;
 class CRUDRepository
 {
     
-    private $connection;
+    private $con;
     
     private $table;
     
-    private static $MAPPING = array(
-        'id' => 'setId',
-        'text' => 'setText',
-        'created_at' => 'setDate',
-    );
-
     public function __construct(Connection $connection)
     {
-        $this->connection = $connection;
+        $this->con = $connection;
         $this->table = 'test';
     }
 
     public function fetchAll()
     {
-        return 'zz';
-        // $sql = "SELECT * FROM $this->table";
-        // return $this->hydrateAllData($this->connection->fetchAll($sql));
+        $sql = "SELECT * FROM $this->table";
+        return $this->con->fetchAssoc($sql);
     }
-
+    
+    public function getTop ()
+    {
+       $sql = "SELECT * FROM $this->table LIMIT 20";
+       return $this->con->fetchAssoc($sql); 
+    }
+    
     public function fetch($id)
     {
         $sql = "SELECT * FROM $this->table WHERE id =". $id;
         return $this->hydrateAllData($this->connection->fetchAll($sql))[0];
     }
     
-    protected function hydrateAllData(array $rows)
-    {
-        $messages = new ArrayCollection();
-
-        foreach($rows as $row) {
-            $messages->add($this->hydrateRowData($row));
-        }
-
-        return $messages;
-    }
-
-    protected function hydrateRowData(array $row)
-    {
-        $crud = new Message();
-
-        foreach(self::$MAPPING as $fieldName => $method) {
-            if(array_key_exists($fieldName, $row) && method_exists($crud, $method)) {
-                call_user_func(array($crud, $method), $row[$fieldName]);
-            }
-        }
-
-        return $crud;
-    }
 } 
