@@ -3,11 +3,10 @@
 namespace MainApp\Entity;
 
 
-class Message
+class Person
 {
     private $id;
     private $text;
-    private $date;
 
     /**
      * @return mixed
@@ -45,21 +44,4 @@ class Message
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getDate()
-    {
-        return $this->date;
-    }
-
-    /**
-     * @param mixed $date
-     * @return Message
-     */
-    public function setDate($date)
-    {
-        $this->date = $date;
-        return $this;
-    }
 }
