@@ -13,9 +13,12 @@ class AppController
     
     private $per_page = 3;
     
+    private $mlog;
+    
     public function __construct( CRUDService $CRUDService ) {
         $this->crudService = $CRUDService;
         $this->toJSON = $JsonResponse;
+        // $this->mlog = $monolog;
     }
     
     public function getAll() {
@@ -28,20 +31,25 @@ class AppController
     public function getPage( $num ) {
         
         $begin  = $this->getStartPage( $num );
-        $result = $this->crudService->getPage( $begin, $this->per_page );
+        $result = $this->crudService->getPage( $begin, $this->per_page);
         
         return new JsonResponse($result);
         
     }
     
-    public function addName( $name ) {
+    public function addPerson(Request $request) {
         
-        $result = $this->crudService->addFirstName( $name );
+        $f_n = $request->get('f');
+        $l_n = $request->get('l');
+        $m_n = $request->get('m');
+        $response_err = 'Please provide all required fields';
+        if (is_null($f_n)||is_null($l_n)||is_null($m_n)) return new JsonResponse($response_err ,201);
         
-        return new JsonResponse($result);
+        $result = $this->crudService->addPerson($f_n, $l_n, $m_n);
+        
+        return new JsonResponse($result, 200);
         
     }
-    
     
     protected function getStartPage ($cur_page){
         if ( $cur_page < 1 ) $cur_page = 1;

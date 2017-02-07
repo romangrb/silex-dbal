@@ -16,12 +16,8 @@ class CRUDServiceProvider implements ServiceProviderInterface
             if(!isset($app['db'])) {
                 throw new LogicException('The DoctrineServiceProvider does not registered, the CRUDServiceProvider could be use');
             }
-
-            if(!isset($app['app.crud.repository'])) {
-                throw new LogicException('The MessageRepositoryProvider does not registered, the CRUDServiceProvider could be use');
-            }
-
-            return new CRUDService($app['db'], $app['app.crud.repository']);
+            
+            return new CRUDService($app['db']);
         };
     }
 }

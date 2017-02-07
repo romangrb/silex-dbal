@@ -20,8 +20,6 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     ),
 ));
 
-$app->register(new \MainApp\Provider\CRUDRepositoryProvider());
-
 $app->register(new \MainApp\Provider\CRUDServiceProvider());
 
 $app->register(new Silex\Provider\ServiceControllerServiceProvider());

@@ -8,10 +8,6 @@ use Blog\Controller\MessageController;
 
 $app = new Silex\Application();
 
-$app->register(new Silex\Provider\MonologServiceProvider(), array(
-    'monolog.logfile' => __DIR__.'/log_info.log',
-));
-
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => array(
         'driver' => 'pdo_mysql',
