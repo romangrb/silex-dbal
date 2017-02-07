@@ -22,13 +22,14 @@ class CRUDService
         
         $stream = new StreamHandler(__DIR__.'/crud_service.log', Logger::DEBUG);
         $firephp = new FirePHPHandler();
-        $this->wr = new Logger('my_logger');
+        $this->wr = new Logger('crud_logger');
         $this->wr->pushHandler($stream);
         $this->wr->pushHandler($firephp);
         
     }
     
     public function __construct(connection $connection) {
+        
         $this->conn = $connection;
         
         $this->init_logger();
@@ -42,98 +43,93 @@ class CRUDService
     }
 
     public function fetchAll() {
-        $sql = "SELECT * FROM $this->tables['f']";
-        return $this->conn->fetchAssoc($sql);
+       
+        $sql = "        
+                SELECT
+                    A.value as 'first name',  
+                    B.value as 'last name',
+                    C.value as 'middle name'
+                FROM
+                    {$this->tables['f']} A,
+                    {$this->tables['l']} B,
+                    {$this->tables['m']} C    
+                
+                WHERE
+                    A.id = B.id
+                AND
+                    B.id = C.id
+                ";
+                
+        return $this->conn->fetchAll($sql);
     }
     
-    public function getPage( $offset, $limit, $mlog ) {
-        $sql = "SELECT * FROM {$this->tables['f']} LIMIT $offset, $limit";
+    public function getPersonPage( $offset, $limit ) {
+        $sql = "        
+                SELECT
+                    A.value as 'first name',  
+                    B.value as 'last name',
+                    C.value as 'middle name'
+                FROM
+                    {$this->tables['f']} A,
+                    {$this->tables['l']} B,
+                    {$this->tables['m']} C    
+                
+                WHERE
+                    A.id = B.id
+                AND
+                    B.id = C.id
+                LIMIT $offset, $limit
+              ";
+        
         return $this->conn->fetchAll($sql); 
     }
     
-    public function addPerson($f_n, $l_n, $m_n) {
-        $this->wr->addInfo('p', array($f_n, $l_n, $m_n));
-        
-        $sql = "INSERT INTO {$this->tables['f']} (value) VALUES(?)";
+    private function prepareAddPersonAttr($table_n, $id, $name) {
+            
+        $sql = "INSERT INTO {$this->tables[$table_n]} VALUES(?, ? )";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(1, 'test');
-        $this->conn->beginTransaction();
+        $stmt->bindValue(1, (int) $id);
+        $stmt->bindValue(2, (string) $name);
+        $stmt->execute();
         
-        $sqld = "INSERT INTO {$this->tables['second']} (value) VALUES(?)";
-        $stmtd = $this->conn->prepare($sqld);
-        $stmtd->bindValue(1, null);
-        
+    }
+    
+    private function exHandler($e, $num){
+        $info = array('exeption' . $num => $e);
+        $this->wr->addInfo('exeption', $info);
+        return $info;
+    }
+    
+    public function addPerson($pers_attr) {
+    
+        $sql = "INSERT INTO {$this->tables['p']} (is_existed) VALUES(?)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(1, 1);
+      
         try{
+            $this->conn->beginTransaction();
             $stmt->execute();
-            $stmtd->execute();
+            $id = $this->conn->lastInsertId();
+           
+            try {
+                foreach ($pers_attr as $key => $value ) $this->prepareAddPersonAttr($key, $id, $value);
+            
+            } catch (\Exception $e) {
+                $info = $this->exHandler($e, 1);
+                $this->conn->rollBack();
+                $this->conn->beginTransaction(); 
+            }
+            
             $this->conn->commit();
+        
         } catch (\Exception $e) {
+            $info = $this->exHandler($e, 2);
             $this->conn->rollBack();
-            // $this->wr->addInfo('exeption', array('exeption' => $e));
-            throw $e;
-        } 
-        $this->wr->addInfo('info-log', array('name' => $name));
+        }
+        
+        return (is_null($info))? array('added', array('id'=>$id)) : array('error'=>$info);
        
     }
     
-    //     $conn->beginTransaction();
-    // try{
-    //     // do stuff
-    //     $conn->commit();
-    // } catch (\Exception $e) {
-    //     $conn->rollBack();
-    //     throw $e;
-    // }
-    
-    
-//     $em->getConnection()->beginTransaction(); // suspend auto-commit
-// try {
-//     //... do some work
-//     $user = new User;
-//     $user->setName('George');
-//     $em->persist($user);
-//     $em->flush();
-//     $em->getConnection()->commit();
-// } catch (Exception $e) {
-//     $em->getConnection()->rollBack();
-//     throw $e;
-// }
-    
-    
-    
-    public function addFullName( $offset, $limit ) {
-        $sql = "INSERT INTO $this->tables['first'] (name)VALUES(?)";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(1, $crud->getText());
-        $stmt->bindValue(2, $crud->getDate());
-        $stmt->execute();
-    }
-    
-    // public function fetch($id) {
-    //     return $this->crudRepository->fetch($id);
-    // }
-    
-    // public function add(Message $crud) {
-    //         $sql = "INSERT INTO $this->tables['first'] (name)VALUES(?)";
-    //         $stmt = $this->conn->prepare($sql);
-    //         $stmt->bindValue(1, $crud->getText());
-    //         $stmt->bindValue(2, $crud->getDate());
-    //         $stmt->execute();
-    //     }
-        
-    //   public function delete($id) {
-    //         $sql = "DELETE FROM $this->tables['first'] WHERE id=?";
-    //         $stmt = $this->conn->prepare($sql);
-    //         $stmt->bindValue(1, $id);
-    //         $stmt->execute();
-    //   }
 
-    //   public function update(Message $crud) {
-    //         $sql = "UPDATE $this->tables['first'] SET name =? WHERE id=?";
-    //         $stmt = $this->conn->prepare($sql);
-    //         $stmt->bindValue(1, $crud->getText());
-    //         $stmt->bindValue(2, $crud->getDate());
-    //         $stmt->bindValue(3, $crud->getId());
-    //         $stmt->execute();
-    //     }
 } 

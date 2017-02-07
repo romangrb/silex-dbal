@@ -9,51 +9,46 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class AppController
 {
     
-    protected $crudService;
+    private $crudService;
     
-    private $per_page = 3;
+    private $rq_fields = array('f', 'l', 'm');
     
-    private $mlog;
+    const PER_PAGE = 3;
     
     public function __construct( CRUDService $CRUDService ) {
         $this->crudService = $CRUDService;
         $this->toJSON = $JsonResponse;
-        // $this->mlog = $monolog;
     }
     
     public function getAll() {
-
         $result = $this->crudService->fetchAll();
-        return new JsonResponse(array('all'=>$result));
-        
+        return new JsonResponse($result, 200);
     }
     
     public function getPage( $num ) {
         
         $begin  = $this->getStartPage( $num );
-        $result = $this->crudService->getPage( $begin, $this->per_page);
+        $result = $this->crudService->getPersonPage( $begin, self::PER_PAGE);
         
         return new JsonResponse($result);
         
     }
     
     public function addPerson(Request $request) {
+        $rq_data = array();
+        foreach ($this->rq_fields as $key) {
+            if (is_null($request->get($key))) return new JsonResponse('Please provide all required fields' ,201);
+            $rq_data[$key] = $request->get($key);
+        }
         
-        $f_n = $request->get('f');
-        $l_n = $request->get('l');
-        $m_n = $request->get('m');
-        $response_err = 'Please provide all required fields';
-        if (is_null($f_n)||is_null($l_n)||is_null($m_n)) return new JsonResponse($response_err ,201);
-        
-        $result = $this->crudService->addPerson($f_n, $l_n, $m_n);
-        
+        $result = $this->crudService->addPerson($rq_data);
         return new JsonResponse($result, 200);
         
     }
     
     protected function getStartPage ($cur_page){
         if ( $cur_page < 1 ) $cur_page = 1;
-        return ($cur_page - 1) * $this->per_page;
+        return ($cur_page - 1) * self::PER_PAGE;
     }
     
 }
