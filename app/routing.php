@@ -6,4 +6,4 @@ $app->get('/person/{num}', "app.controller:getPage");
 
 $app->post('/person/add', "app.controller:addPerson");
 
-$app->post('/person/upload', "app.controller:addPicture");
+$app->post('/person/upload', "fs.controller:addPicture");

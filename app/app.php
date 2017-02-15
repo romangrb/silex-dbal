@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use MainApp\Controller\AppController;
+use MainApp\Controller\FsController;
 
 $app = new Silex\Application();
 
@@ -26,6 +27,10 @@ $app->register(new Silex\Provider\ServiceControllerServiceProvider());
 
 $app['app.controller'] = function() use($app) {
     return new AppController($app['app.crud.service']);
+};
+
+$app['fs.controller'] = function() use($app) {
+    return new FsController($app['app.crud.service']);
 };
 
 include __DIR__ . '/routing.php';
