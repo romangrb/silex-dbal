@@ -1,0 +1,23 @@
+http://api.symfony.com/2.3/Symfony/Component/HttpFoundation/File/UploadedFile.html
+[2017-02-15 12:01:41] crud_logger.INFO: Array (    
+[1] => Symfony\Component\HttpFoundation\File\UploadedFile Object 
+    (             [test:Symfony\Component\HttpFoundation\File\UploadedFile:private] =>   
+    [originalName:Symfony\Component\HttpFoundation\File\UploadedFile:private] => image.jpg
+    [mimeType:Symfony\Component\HttpFoundation\File\UploadedFile:private] => image/jpeg  
+    [size:Symfony\Component\HttpFoundation\File\UploadedFile:private] => 28509        
+    [error:Symfony\Component\HttpFoundation\File\UploadedFile:private] => 0         
+    [pathName:SplFileInfo:private] => /tmp/phpJrT6Hn          
+    [fileName:SplFileInfo:private] => phpJrT6Hn         
+    )    
+[2] => Symfony\Component\HttpFoundation\File\UploadedFile Object    
+    (             [test:Symfony\Component\HttpFoundation\File\UploadedFile:private] => 
+    [originalName:Symfony\Component\HttpFoundation\File\UploadedFile:private] => image.jpg
+    [mimeType:Symfony\Component\HttpFoundation\File\UploadedFile:private] => image/jpeg  
+    [size:Symfony\Component\HttpFoundation\File\UploadedFile:private] => 28509        
+    [error:Symfony\Component\HttpFoundation\File\UploadedFile:private] => 0         
+    [pathName:SplFileInfo:private] => /tmp/phphQGgsK 
+    [fileName:SplFileInfo:private] => phphQGgsK         )  
+    )  [] []
+
+[2017-02-15 13:25:05] crud_logger.INFO: An error :  [] []
+[2017-02-15 13:25:15] crud_logger.ERROR: An error :  [] []

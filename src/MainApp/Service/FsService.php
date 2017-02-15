@@ -1,6 +1,9 @@
 <?php
 namespace MainApp\Service;
 
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\FirePHPHandler;
@@ -9,13 +12,15 @@ class FsService  {
     
     private $wr;
     
+    private $fs;
+    
     private $supported_image_type = array(
         'gif',
         'jpg',
         'jpeg',
         'png'
     );
-    
+    const UPLOAD_ROOT_NAME = '/upload/'; 
     private function init_logger(){
         
         $stream = new StreamHandler(__DIR__.'/fs.log', Logger::DEBUG);
@@ -28,49 +33,59 @@ class FsService  {
     
     public function __construct() {
        $this->init_logger();
+       $this->fs = new Filesystem();
     }
      
-    public function writeFile($file, $request){
-    	$this->wr->addInfo(json_encode($request->files->all(), true));
-        // if post file data is null  than responce an error
-    	if ($file == null) {
-    		$responce = $this->statusHandler(false, "No image was definded");
-    	 	return json_encode($responce);
-    	}
-    	
-    
-    	return;
-        // get the file extension & make it lowercase
-        $extension = strtolower($file->getClientOriginalExtension());
-        // check if it is valid
-        if(! in_array($extension,  $this->supported_image_type )){
-            $responce = $this->statusHandler(false, "it is not a valid image type of : 'gif', 'jpg', 'jpeg', 'png' !");
-            return json_encode($responce);
-        }
-        // add extension to name
-        $name = $this->generateRandomString(10); $name .= '.'.$extension;
-        // create the file
-        $file->move(__DIR__.'/upload', $name);
-        // return success message
-        $responce = $this->statusHandler(true, "Image successfully uploaded !  " . $name);
+    public function saveFiles($files){
+        $status;
         
-        return $responce;
+        $dir_name = mt_rand();
+        $file_path = __DIR__. self::UPLOAD_ROOT_NAME . $dir_name;
+        
+        try {
+          $this->fs->mkdir($file_path);
+        } catch (IOExceptionInterface $e) {
+          $this->wr->addError('An error occurred while creating your directory at : ',  $e->getPath());
+        }
+        // create the directory
+        foreach ($files as $key => $val) {
+           // get ext or gues if is not exist of MIME type
+           $ext = ($val->getClientOriginalExtension()) ? $val->getClientOriginalExtension() : $val->guessExtension;
+           $name = $key . '.'.$ext;
+           
+           try {
+                $val->move($file_path, $name);
+            } catch (IOExceptionInterface  $e) {
+                $this->wr->addError('Saving file error : ',  $e->getMessage(), "\n");
+                $status = $this->statusHandler(false, 'Saving file error occured :' . $e->getMessage());
+                
+            }
+            
+        }
+         
+        try {
+          if ($this->fs->exists($file_path)) $this->fs->remove($file_path);
+        } catch (IOExceptionInterface $e) {
+          $this->wr->addError('An error occurred while removing your directory at : ',  $e->getPath());
+        }
+         
+        
+        
+        // $this->wr->addInfo(print_r($rq_data,true)); 
+        return $dir_name;
+      
+    }
+    
+    private function writeFiles($is_success, $txt){
+        $obj=new \stdClass();
+        ($is_success) ? $obj->success = $txt : $obj->error = $txt;
+        return $obj; 
     }
     
     private function statusHandler($is_success, $txt){
         $obj=new \stdClass();
         ($is_success) ? $obj->success = $txt : $obj->error = $txt;
         return $obj; 
-    }
-    
-    private function generateRandomString($length) {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-          $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-        return $randomString;
     }
 
 }

@@ -39,8 +39,8 @@ class FsController
     private function filterFiles($files) {
         $rq_data = array();
         
-        foreach ( $files as $key ) {
-            if (is_numeric($files[$key])) $rq_data[$key] = $files[$key];
+        foreach ($files as $key => $val) {
+           if (is_numeric($key)) $rq_data[$key] = $val;
         }
         
         return $rq_data;
@@ -58,17 +58,17 @@ class FsController
         
         $files = $request->files->all();
         
-        $photos = array_count($files);
+        $photos_ln = count($files);
         
-        if ( $photos > self::MAX_FILES ) {
+        if ( $photos_ln > self::MAX_FILES ) {
         	return json_encode('Limit of uploading files is ' . self::MAX_FILES . ' please try separate to several requests');
         }
         
-        $this->filterFiles($request);
+        $photos = $this->filterFiles($files);
         
-        $this->validateFiles();
+        // $this->validateFiles();
         // 	upload the file and return the json with the data
-    	return json_encode($this->FileHelper->writeFile($file, $request));
+    	return json_encode($this->FileHelper->saveFiles($photos));
     }
     
     
