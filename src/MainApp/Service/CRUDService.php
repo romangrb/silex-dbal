@@ -68,20 +68,28 @@ class CRUDService
     }
     
     public function getPersonPage( $offset, $limit ) {
+        
         $sql = "        
                 SELECT
                     A.value as 'first name',  
                     B.value as 'last name',
-                    C.value as 'middle name'
+                    C.value as 'middle name',
+                    D.dir as 'persons folder',
+                    E.profile_path as 'path'
                 FROM
                     {$this->tables['f']} A,
                     {$this->tables['l']} B,
-                    {$this->tables['m']} C    
+                    {$this->tables['m']} C, 
+                    {$this->tables['p']} D,
+                    {$this->tables['p']} E
                 
                 WHERE
                     A.id = B.id
                 AND
                     B.id = C.id
+                AND
+                    D.person = C.id
+         
                 LIMIT $offset, $limit
               ";
         
@@ -104,8 +112,8 @@ class CRUDService
         
         $sql = "UPDATE {$this->tables['p']} SET profile_path =?, dir=? WHERE person =?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(1, (string) $dir);
-        $stmt->bindValue(2, (string) $path);
+        $stmt->bindValue(1, (string) $path);
+        $stmt->bindValue(2, (string) $dir);
         $stmt->bindValue(3, (int) $id);
         
         try{
