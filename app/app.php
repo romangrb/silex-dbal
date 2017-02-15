@@ -23,6 +23,8 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
 
 $app->register(new \MainApp\Provider\CRUDServiceProvider());
 
+$app->register(new \MainApp\Provider\FsServiceProvider());
+
 $app->register(new Silex\Provider\ServiceControllerServiceProvider());
 
 $app['app.controller'] = function() use($app) {
@@ -30,7 +32,7 @@ $app['app.controller'] = function() use($app) {
 };
 
 $app['fs.controller'] = function() use($app) {
-    return new FsController($app['app.crud.service']);
+    return new FsController($app['app.crud.service'], $app['app.fs_helper.service']);
 };
 
 include __DIR__ . '/routing.php';
