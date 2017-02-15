@@ -14,7 +14,7 @@ class FsController
     
     const MAX_FILE_SIZE = 3;
     
-    private $rq_fields = array('f', 'l', 'm', 'files_num');
+    private $rq_fields = array('f', 'l', 'm');
     
     private $FileHelper;
     
@@ -29,7 +29,7 @@ class FsController
         $rq_data = array();
         
         foreach ($this->rq_fields as $key) {
-            if (is_null($request->get($key))) return new JsonResponse('Please provide all required fields', 201);
+            if (is_null($request->get($key))) return;
             $rq_data[$key] = $request->get($key);
         }
         
@@ -47,14 +47,15 @@ class FsController
        
     }
     
-    private function validateFiles($request) {
-        
-       
-    }
-    
     public function addPicture(Request $request) {
         
         $persAttr = $this->checkRqAttrFields($request);
+        
+        if ( !$persAttr ) return new JsonResponse('Please provide all required fields', 500); 
+        
+        $result = $this->crudService->addPerson($persAttr);
+        // check if db query executed without an error
+        if ($result->is_failed) return new JsonResponse($result->txt, 500); 
         
         $files = $request->files->all();
         
@@ -66,9 +67,15 @@ class FsController
         
         $photos = $this->filterFiles($files);
         
-        // $this->validateFiles();
-        // 	upload the file and return the json with the data
-    	return json_encode($this->FileHelper->saveFiles($photos));
+        $photos_info = $this->FileHelper->saveFiles($photos);
+        
+        if ( $photos_info->failed ) return new JsonResponse($photos_info, 400);
+        
+        // photos saved let's save name of directory where files is located to db
+        $stat_upd_path = $this->crudService->addProfileFiles($result->id, $photos_info->file_path, $photos_info->dir);
+        
+        return ($stat_upd_path->failed)?  new JsonResponse(array('fs_info'=>$photos_info, 'db_info'=>$stat_upd_path), 400) : new JsonResponse(array('fs_info'=>$photos_info, 'db_info'=>$stat_upd_path), 200);
+
     }
     
     

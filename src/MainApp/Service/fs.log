@@ -18,6 +18,3 @@ http://api.symfony.com/2.3/Symfony/Component/HttpFoundation/File/UploadedFile.ht
     [pathName:SplFileInfo:private] => /tmp/phphQGgsK 
     [fileName:SplFileInfo:private] => phphQGgsK         )  
     )  [] []
-
-[2017-02-15 13:25:05] crud_logger.INFO: An error :  [] []
-[2017-02-15 13:25:15] crud_logger.ERROR: An error :  [] []
