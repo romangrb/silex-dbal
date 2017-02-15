@@ -1,18 +1,22 @@
 <?php
 namespace MainApp\Service;
 
-use Doctrine\DBAL\connection;
-use MainApp\Entity\Message;
-
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\FirePHPHandler;
 
 class FsService  {
     
-    protected $wr;
+    private $wr;
     
-    protected function init_logger(){
+    private $supported_image_type = array(
+        'gif',
+        'jpg',
+        'jpeg',
+        'png'
+    );
+    
+    private function init_logger(){
         
         $stream = new StreamHandler(__DIR__.'/fs.log', Logger::DEBUG);
         $firephp = new FirePHPHandler();
@@ -26,28 +30,30 @@ class FsService  {
        $this->init_logger();
     }
      
-    public function writeFile($file){
-    
-        // if post file data is null responce error
+    public function writeFile($file, $request){
+    	$this->wr->addInfo(json_encode($request->files->all(), true));
+        // if post file data is null  than responce an error
     	if ($file == null) {
     		$responce = $this->statusHandler(false, "No image was definded");
     	 	return json_encode($responce);
     	}
+    	
+    
+    	return;
         // get the file extension & make it lowercase
-        $extension=strtolower($file->getClientOriginalExtension());
+        $extension = strtolower($file->getClientOriginalExtension());
         // check if it is valid
-        if(! in_array($extension,  $this->supported_image )){
-            $responce = $this->statusHandler(false, "is not an valid image type of 'gif', 'jpg', 'jpeg', 'png' !");
+        if(! in_array($extension,  $this->supported_image_type )){
+            $responce = $this->statusHandler(false, "it is not a valid image type of : 'gif', 'jpg', 'jpeg', 'png' !");
             return json_encode($responce);
         }
         // add extension to name
         $name = $this->generateRandomString(10); $name .= '.'.$extension;
         // create the file
         $file->move(__DIR__.'/upload', $name);
-        // return an success message
+        // return success message
         $responce = $this->statusHandler(true, "Image successfully uploaded !  " . $name);
-       
-        // $this->wr->addInfo(json_encode($obj));
+        
         return $responce;
     }
     
@@ -57,13 +63,6 @@ class FsService  {
         return $obj; 
     }
     
-    private $supported_image = array(
-            'gif',
-            'jpg',
-            'jpeg',
-            'png'
-    );
-
     private function generateRandomString($length) {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);

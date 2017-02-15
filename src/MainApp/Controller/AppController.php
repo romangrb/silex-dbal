@@ -37,7 +37,7 @@ class AppController
     public function addPerson(Request $request) {
         $rq_data = array();
         foreach ($this->rq_fields as $key) {
-            if (is_null($request->get($key))) return new JsonResponse('Please provide all required fields' ,201);
+            if (is_null($request->get($key))) return new JsonResponse('Please provide all required fields', 201);
             $rq_data[$key] = $request->get($key);
         }
         
