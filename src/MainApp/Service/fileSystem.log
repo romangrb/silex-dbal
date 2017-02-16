@@ -1,2 +1,2 @@
-[2017-02-16 12:39:15] crud_logger.ERROR: ["\/home\/ubuntu\/workspace\/src\/MainApp\/Service\/upload\/","151337982"] [] []
-[2017-02-16 12:39:52] crud_logger.INFO: ["\/home\/ubuntu\/workspace\/src\/MainApp\/Service\/upload\/","151337982"] [] []
+[2017-02-16 13:10:57] crud_logger.INFO: HTTP/1.0 200 OK Cache-Control: public Last-Modified: Wed, 15 Feb 2017 20:33:04 GMT   [] []
+[2017-02-16 13:11:40] crud_logger.INFO: HTTP/1.0 200 OK Cache-Control:       public Content-Disposition: inline; filename="1.jpg" Last-Modified:       Wed, 15 Feb 2017 20:33:04 GMT   [] []

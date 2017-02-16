@@ -110,27 +110,37 @@ class FsService  {
          * $basePath can be either exposed (typically inside web/)
          * or "internal"
          */
-        $this->wr->addInfo(json_encode(array($path, $dir)));
-        return $path;
-        $basePath = $this->container->getParameter('kernel.root_dir').'/Resources/my_custom_folder';
-
-        $filePath = $basePath.'/'.$filename;
-
+        // $this->wr->addInfo(json_encode(array($path, $dir)));
+        
+        // $basePath = $this->container->getParameter('kernel.root_dir').'/Resources/my_custom_folder';
+        
+        // $filePath = $basePath.'/'.$filename;
+        $filePath = $path . '' . $dir;
+        $filename = '1.jpg';
         // check if file exists
-        $fs = new FileSystem();
-        if (!$fs->exists($filepath)) {
-            throw $this->createNotFoundException();
+        
+        try {
+            if (!$this->fs->exists($filePath)) throw new Exception('Directory is not exist');
+        } catch (\Exception $e) {
+           $err = $e->getMessage() .  $e->getPath();
+           $status->txt .= $err; 
+           $this->wr->addError($err);
         }
-
+        
+        try {
+            $response = new BinaryFileResponse($filePath . '/1.jpg');
+        } catch (\Exception $e) {
+            $this->wr->addInfo($e);
+        }
+        
         // prepare BinaryFileResponse
-        $response = new BinaryFileResponse($filePath);
         $response->trustXSendfileTypeHeader();
         $response->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_INLINE,
             $filename,
             iconv('UTF-8', 'ASCII//TRANSLIT', $filename)
         );
-
+        $this->wr->addInfo($response);
         return $response;
     }
     
