@@ -7,6 +7,7 @@ use MainApp\Service\FsService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
+
 class FsController
 {
     
@@ -47,7 +48,23 @@ class FsController
        
     }
     
-    public function addPicture(Request $request) {
+    public function getPictures(Request $request){
+        
+        $persAttr = $this->checkRqAttrFields($request);
+        
+        if ( !$persAttr ) return new JsonResponse('Please provide all required fields', 500); 
+        
+        $id = $this->crudService->getPerson($persAttr);
+        
+        if ( !$id ) return new JsonResponse('Required person is not exist', 100); 
+        
+        // $photos_info = $this->FileHelper->getFiles($id);
+        return  new JsonResponse(array('1'), 200);
+        // return  new JsonResponse(array('fs_info'=>$photos_info), 200);
+        
+    }
+    
+    public function addPictures(Request $request) {
         
         $persAttr = $this->checkRqAttrFields($request);
         

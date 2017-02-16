@@ -3,6 +3,8 @@ namespace MainApp\Service;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -94,8 +96,40 @@ class FsService  {
             }
         }
        
-        return $this->status;;
+        return $this->status;
       
+    }
+    
+    /**
+     * Serve a file by forcing the download
+     *
+     * @Route("/download/{filename}", name="download_file", requirements={"filename": ".+"})
+     */
+    public function getFiles($filename){
+        /**
+         * $basePath can be either exposed (typically inside web/)
+         * or "internal"
+         */
+        $basePath = $this->container->getParameter('kernel.root_dir').'/Resources/my_custom_folder';
+
+        $filePath = $basePath.'/'.$filename;
+
+        // check if file exists
+        $fs = new FileSystem();
+        if (!$fs->exists($filepath)) {
+            throw $this->createNotFoundException();
+        }
+
+        // prepare BinaryFileResponse
+        $response = new BinaryFileResponse($filePath);
+        $response->trustXSendfileTypeHeader();
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_INLINE,
+            $filename,
+            iconv('UTF-8', 'ASCII//TRANSLIT', $filename)
+        );
+
+        return $response;
     }
     
 
