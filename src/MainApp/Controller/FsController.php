@@ -54,12 +54,13 @@ class FsController
         
         if ( !$persAttr ) return new JsonResponse('Please provide all required fields', 500); 
         
-        $id = $this->crudService->getPerson($persAttr);
-        
-        if ( !$id ) return new JsonResponse('Required person is not exist', 100); 
-        
-        // $photos_info = $this->FileHelper->getFiles($id);
-        return  new JsonResponse(array('1'), 200);
+        $persData = $this->crudService->getPerson($persAttr);
+               
+        if ( empty($persData) ) return new JsonResponse('Required person does not exist', 100); 
+        if ( !$persData['dir'] || !$persData['profile_path'] ) return new JsonResponse('Required person data does not exist', 100);
+
+        $photos_info = $this->FileHelper->getFiles($persData['profile_path'], $persData['dir']);
+        return  new JsonResponse(array($photos_info), 200);
         // return  new JsonResponse(array('fs_info'=>$photos_info), 200);
         
     }

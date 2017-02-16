@@ -30,7 +30,7 @@ class FsService  {
     
     private function init_logger(){
         
-        $stream = new StreamHandler(__DIR__.'/save_fn.log', Logger::DEBUG);
+        $stream = new StreamHandler(__DIR__.'/fileSystem.log', Logger::DEBUG);
         $firephp = new FirePHPHandler();
         $this->wr = new Logger('crud_logger');
         $this->wr->pushHandler($stream);
@@ -92,7 +92,7 @@ class FsService  {
             } catch (IOExceptionInterface $e) {
               $err = "An error occurred while removing directory at : ".  $e->getPath();
               $status->txt .= $err; 
-              $this->wr->addError();
+              $this->wr->addError($err);
             }
         }
        
@@ -105,11 +105,13 @@ class FsService  {
      *
      * @Route("/download/{filename}", name="download_file", requirements={"filename": ".+"})
      */
-    public function getFiles($filename){
+    public function getFiles($path, $dir){
         /**
          * $basePath can be either exposed (typically inside web/)
          * or "internal"
          */
+        $this->wr->addInfo(json_encode(array($path, $dir)));
+        return $path;
         $basePath = $this->container->getParameter('kernel.root_dir').'/Resources/my_custom_folder';
 
         $filePath = $basePath.'/'.$filename;

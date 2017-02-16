@@ -68,33 +68,30 @@ class CRUDService
     }
     
     public function getPerson( $personAttrArr ) {
-        $this->wr->addInfo(json_encode($personAttrArr));
-        return;
+        
         $sql = "        
                 SELECT
-                    A.value as 'first name',  
-                    B.value as 'last name',
-                    C.value as 'middle name',
-                    D.dir as 'persons folder',
-                    E.profile_path as 'path'
+                    G.person as 'id',
+                    D.dir as 'dir',
+                    E.profile_path as 'profile_path'
+
                 FROM
                     {$this->tables['f']} A,
                     {$this->tables['l']} B,
                     {$this->tables['m']} C, 
                     {$this->tables['p']} D,
-                    {$this->tables['p']} E
-                
+                    {$this->tables['p']} E,
+                    {$this->tables['p']} G
                 WHERE
-                    A.id = $f
-                AND
-                    B.id = $l
-                AND
-                    D.person = A.id
-         
+                    A.value = '{$personAttrArr['f']}'
+                    AND
+                    B.value = '{$personAttrArr['l']}'
+                    AND
+                    C.value = '{$personAttrArr['m']}'
                 LIMIT 1
+                
               ";
-        
-        return $this->conn->fetchAll($sql); 
+        return $this->conn->fetchAssoc($sql); 
     }
     
     public function getPersonPage( $offset, $limit ) {
