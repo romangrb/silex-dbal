@@ -5,6 +5,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\Finder\Finder;
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -100,47 +101,70 @@ class FsService  {
       
     }
     
-    /**
-     * Serve a file by forcing the download
-     *
-     * @Route("/download/{filename}", name="download_file", requirements={"filename": ".+"})
-     */
+//     use Symfony\Component\Finder\Finder;
+
+// $finder = new Finder();
+// $finder->files()->in(__DIR__);
+
+// foreach ($finder as $file) {
+//     // Dump the absolute path
+//     var_dump($file->getRealPath());
+
+//     // Dump the relative path to the file, omitting the filename
+//     var_dump($file->getRelativePath());
+
+//     // Dump the relative path to the file
+//     var_dump($file->getRelativePathname());
+// }
+    
     public function getFiles($path, $dir){
-        /**
-         * $basePath can be either exposed (typically inside web/)
-         * or "internal"
-         */
-        // $this->wr->addInfo(json_encode(array($path, $dir)));
         
-        // $basePath = $this->container->getParameter('kernel.root_dir').'/Resources/my_custom_folder';
-        
-        // $filePath = $basePath.'/'.$filename;
         $filePath = $path . '' . $dir;
-        $filename = '1.jpg';
-        // check if file exists
         
         try {
             if (!$this->fs->exists($filePath)) throw new Exception('Directory is not exist');
+            
         } catch (\Exception $e) {
            $err = $e->getMessage() .  $e->getPath();
            $status->txt .= $err; 
            $this->wr->addError($err);
         }
         
+        $finder = new Finder();
+        
+        $finder->files()->in($filePath);
+        
+        foreach ($finder as $file) {
+            
+            $filePath = $file;
+            $filename = $file->getRelativePathname();
+            $response = $this->getResponce($filePath, $filename);
+            
+        }
+        
+        return $response;
+        
+    }
+    
+    
+    private function getResponce($filePath, $filename){
+        
         try {
-            $response = new BinaryFileResponse($filePath . '/1.jpg');
+            $response = new BinaryFileResponse($filePath);
         } catch (\Exception $e) {
             $this->wr->addInfo($e);
         }
         
-        // prepare BinaryFileResponse
         $response->trustXSendfileTypeHeader();
         $response->setContentDisposition(
-            ResponseHeaderBag::DISPOSITION_INLINE,
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
             $filename,
             iconv('UTF-8', 'ASCII//TRANSLIT', $filename)
         );
-        $this->wr->addInfo($response);
+        $response->headers->set('Content-Transfer-Encoding', 'binary');
+        $response->headers->set('Content-Length', filesize($filePath));
+        $response->headers->set('Content-Type', 'image/jpg');
+         
         return $response;
     }
     

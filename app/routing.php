@@ -9,3 +9,5 @@ $app->post('/person/add', "app.controller:addPerson");
 $app->post('/person/upload', "fs.controller:addPictures");
 
 $app->post('/person/download', "fs.controller:getPictures");
+
+$app->post('/person/test', "fs.controller:test");

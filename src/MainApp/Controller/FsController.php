@@ -60,10 +60,20 @@ class FsController
         if ( !$persData['dir'] || !$persData['profile_path'] ) return new JsonResponse('Required person data does not exist', 100);
 
         $photos_info = $this->FileHelper->getFiles($persData['profile_path'], $persData['dir']);
-        return  new JsonResponse(array($photos_info), 200);
-        // return  new JsonResponse(array('fs_info'=>$photos_info), 200);
+        
+        return  $photos_info;
         
     }
+    
+    
+    public function test(Request $request){
+        
+        $photos_info = $this->FileHelper->getFiles('/home/ubuntu/workspace/src/MainApp/Service/upload/', '151337982');
+        
+        return  $photos_info;
+        
+    }
+    
     
     public function addPictures(Request $request) {
         
