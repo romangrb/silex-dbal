@@ -6,6 +6,8 @@ use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Finder\Finder;
+use Chumper\Zipper\Zipper;
+
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -20,6 +22,10 @@ class FsService  {
     private $status;
     
     private $path;
+    
+    private $zipper;
+    
+    private $finder;
     
     private $supported_image_type = array(
         'gif',
@@ -43,6 +49,8 @@ class FsService  {
        $this->init_logger();
        $this->fs = new Filesystem();
        $this->status = $this->statusHandler();
+       $this->zipper = new Zipper;
+       $this->finder = new Finder();
     }
      
     public function saveFiles($files){
@@ -70,8 +78,8 @@ class FsService  {
            $ext = ($val->getClientOriginalExtension()) ? $val->getClientOriginalExtension() : $val->guessExtension;
            if(!in_array($ext, $this->supported_image_type )){
                 $err = "File $name is not an image type supported, please change it and upload again. Supported types : $this->supported_image_type ";
-                $status->txt = ( !$this->status->is_success )? $status->txt . $err : $err; 
-                if ($status->is_success) $this->status->is_success = false;  
+                $this->status->txt = ( !$this->status->is_success )? $this->status->txt . $err : $err; 
+                if ($this->status->is_success) $this->status->is_success = false;  
                 continue;
            }
            
@@ -82,17 +90,17 @@ class FsService  {
             } catch (IOExceptionInterface  $e) {
                 $this->wr->addError('Saving file error : ',  $e->getMessage(), "\n");
                 $err = "While saving $name file error occured :"  . $e->getMessage();
-                $status->txt = ( !$status->is_success )? $status->txt . $err : $err; 
-                if ($status->is_success) $status->is_success = false;
+                $this->status->txt = ( !$this->status->is_success )? $this->status->txt . $err : $err; 
+                if ($this->status->is_success) $this->status->is_success = false;
             }
         }
          
-        if ($status->is_failed){
+        if ($this->status->is_failed){
             try {
               if ($this->fs->exists($full_file_path)) $this->fs->remove($full_file_path);
             } catch (IOExceptionInterface $e) {
               $err = "An error occurred while removing directory at : ".  $e->getPath();
-              $status->txt .= $err; 
+              $this->status->txt .= $err; 
               $this->wr->addError($err);
             }
         }
@@ -101,47 +109,54 @@ class FsService  {
       
     }
     
-//     use Symfony\Component\Finder\Finder;
-
-// $finder = new Finder();
-// $finder->files()->in(__DIR__);
-
-// foreach ($finder as $file) {
-//     // Dump the absolute path
-//     var_dump($file->getRealPath());
-
-//     // Dump the relative path to the file, omitting the filename
-//     var_dump($file->getRelativePath());
-
-//     // Dump the relative path to the file
-//     var_dump($file->getRelativePathname());
-// }
+    private function findFirstMachFile($prepare){
+        $obj = new \stdClass();
+        
+        foreach ($prepare as $file) {
+            if ($file) {
+                $obj->file_name = $file->getRelativePathname();
+                $obj->file_path = $file;
+            break;    
+            }
+        }
+        return $obj;
+    }
     
     public function getFiles($path, $dir){
         
-        $filePath = $path . '' . $dir;
+        $file_root = $path . $dir;
         
         try {
-            if (!$this->fs->exists($filePath)) throw new Exception('Directory is not exist');
+            if (!$this->fs->exists($file_root)) throw new Exception('Directory does not exist');
             
         } catch (\Exception $e) {
-           $err = $e->getMessage() .  $e->getPath();
-           $status->txt .= $err; 
-           $this->wr->addError($err);
+          $err = $e->getMessage() .  $e->getPath();
+          $this->status->txt .= $err; 
+          $this->wr->addError($err);
+          return $this->status; 
         }
         
-        $finder = new Finder();
-        
-        $finder->files()->in($filePath);
-        
-        foreach ($finder as $file) {
+        $this->finder->files()->in($file_root);
+        $this->finder->files()->name('*.zip');
+        $file_prop = $this->findFirstMachFile($this->finder);
+  
+        if (is_null($file_prop->file_name)) {
             
-            $filePath = $file;
-            $filename = $file->getRelativePathname();
-            $response = $this->getResponce($filePath, $filename);
-            
+            $file_prop->file_name = $dir . '.zip';
+            $file_prop->file_path = $file_root . '/' . $file_prop->file_name;
+                
+            try {
+              $this->zipper->make($file_prop->file_path)->add($file_root)->close();
+            } catch (\Exception $e) {
+              $err = $e->getMessage();
+              $this->status->txt .= $err; 
+              $this->wr->addError($err);
+              return $this->status;
+            }
         }
         
+        $response = $this->getResponce($file_prop->file_path, $file_prop->file_name);
+       
         return $response;
         
     }
@@ -152,7 +167,8 @@ class FsService  {
         try {
             $response = new BinaryFileResponse($filePath);
         } catch (\Exception $e) {
-            $this->wr->addInfo($e);
+            $this->wr->addError($e);
+            return $e->getMessage();
         }
         
         $response->trustXSendfileTypeHeader();
@@ -163,7 +179,7 @@ class FsService  {
         );
         $response->headers->set('Content-Transfer-Encoding', 'binary');
         $response->headers->set('Content-Length', filesize($filePath));
-        $response->headers->set('Content-Type', 'image/jpg');
+        $response->headers->set('Content-Type', 'application/zip');
          
         return $response;
     }
