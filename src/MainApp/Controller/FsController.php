@@ -57,6 +57,25 @@ class FsController
         $persData = $this->crudService->getPerson($persAttr);
                
         if ( empty($persData) ) return new JsonResponse('Required person does not exist', 100); 
+        
+        if ( !$persData['dir'] || !$persData['profile_path'] ) return new JsonResponse('Required person data does not exist', 100);
+
+        $photos_info = $this->FileHelper->getFiles($persData['profile_path'], $persData['dir']);
+        
+        return  $photos_info;
+        
+    }
+    
+    public function addPicturesToArchive(Request $request){
+        
+        $persAttr = $this->checkRqAttrFields($request);
+        
+        if ( !$persAttr ) return new JsonResponse('Please provide all required fields', 500); 
+        
+        $persData = $this->crudService->getPerson($persAttr);
+               
+        if ( empty($persData) ) return new JsonResponse('Required person does not exist', 100); 
+        
         if ( !$persData['dir'] || !$persData['profile_path'] ) return new JsonResponse('Required person data does not exist', 100);
 
         $photos_info = $this->FileHelper->getFiles($persData['profile_path'], $persData['dir']);
