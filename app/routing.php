@@ -6,8 +6,10 @@ $app->get('/person/{num}', "app.controller:getPage");
 
 $app->post('/person/add', "app.controller:addPerson");
 
-$app->post('/person/upload', "fs.controller:addPictures");
+$app->post('/person/upload_pictures', "fs.controller:addPictures");
 
 $app->post('/person/download', "fs.controller:getPictures");
 
-$app->post('/person/test', "fs.controller:test");
+$app->post('/archives/upload', "fs.controller:saveAndUnpackFiles");
+
+$app->post('/test', "fs.controller:test");

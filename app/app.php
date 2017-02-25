@@ -32,7 +32,7 @@ $app['app.controller'] = function() use($app) {
 };
 
 $app['fs.controller'] = function() use($app) {
-    return new FsController($app['app.crud.service'], $app['app.fs_helper.service']);
+    return new FsController($app['app.crud.service'], $app['app.fs_helper.service'], $app);
 };
 
 include __DIR__ . '/routing.php';

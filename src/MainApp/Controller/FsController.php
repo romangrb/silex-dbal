@@ -6,6 +6,8 @@ use MainApp\Service\CRUDService;
 use MainApp\Service\FsService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Silex\Application;
 
 
 class FsController
@@ -19,13 +21,18 @@ class FsController
     
     private $FileHelper;
     
-    public function __construct( CRUDService $CRUDService, FsService $FsService) {
+    private $app;
+    
+    public function __construct( CRUDService $CRUDService, FsService $FsService, Application $app) 
+    {
         $this->crudService = $CRUDService;
         $this->FileHelper = $FsService;
         $this->toJSON = $JsonResponse;
+        $this->app = $app;
     }
     
-    private function checkRqAttrFields($request) {
+    private function checkRqAttrFields($request) 
+    {
         
         $rq_data = array();
         
@@ -37,7 +44,8 @@ class FsController
         return $rq_data;
     }
     
-    private function filterFiles($files) {
+    private function filterFiles($files) 
+    {
         $rq_data = array();
         
         foreach ($files as $key => $val) {
@@ -48,7 +56,8 @@ class FsController
        
     }
     
-    public function getPictures(Request $request){
+    public function getPictures(Request $request)
+    {
         
         $persAttr = $this->checkRqAttrFields($request);
         
@@ -66,7 +75,8 @@ class FsController
         
     }
     
-    public function addPicturesToArchive(Request $request){
+    public function addPicturesToArchive(Request $request)
+    {
         
         $persAttr = $this->checkRqAttrFields($request);
         
@@ -84,15 +94,29 @@ class FsController
         
     }
     
-    
-    public function test(Request $request){
+    public function saveAndUnpackFiles(Request $request)
+    {
         
-        $photos_info = $this->FileHelper->getFiles('/home/ubuntu/workspace/src/MainApp/Service/upload/', '151337982');
+        $new_post_data = array_merge($request->request->all(), array('dir'=>mt_rand()));
         
-        return  $photos_info;
+        $subRequest = Request::create(
+            'https://silex-rabbitmq-romangrb.c9users.io/query/upload',
+            $request->getMethod(),
+            $new_post_data,
+            $request->cookies->all(),
+            $request->files->all(),
+            $request->server->all()
+        );
+        $response = $this->app->handle($subRequest, HttpKernelInterface::SUB_REQUEST);
+        
+        return $response;
         
     }
     
+    public function test(Request $request)
+    {
+        return new JsonResponse('ok', 200);
+    }
     
     public function addPictures(Request $request) {
         
