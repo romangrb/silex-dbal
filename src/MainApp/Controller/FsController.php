@@ -23,7 +23,7 @@ class FsController
     
     private $app;
     
-    public function __construct( CRUDService $CRUDService, FsService $FsService, Application $app) 
+    public function __construct( CRUDService $CRUDService, FsService $FsService) 
     {
         $this->crudService = $CRUDService;
         $this->FileHelper = $FsService;
@@ -98,25 +98,28 @@ class FsController
     {
         
         $new_post_data = array_merge($request->request->all(), array('dir'=>mt_rand()));
+        // $new_post_data = array_merge($new_post_data, array('files'=>$request->files->all()));
+        $restUrl = 'https://silex-rabbitmq-romangrb.c9users.io/query/upload';
         
-        $subRequest = Request::create(
-            'https://silex-rabbitmq-romangrb.c9users.io/query/upload',
-            $request->getMethod(),
-            $new_post_data,
-            $request->cookies->all(),
-            $request->files->all(),
-            $request->server->all()
-        );
-        $response = $this->app->handle($subRequest, HttpKernelInterface::SUB_REQUEST);
+        // Initialize curl handle
+        $ch = curl_init(); 
+        
+        // Set request url
+        curl_setopt($ch, CURLOPT_URL, $restUrl); 
+        // A custom request method. 
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request->getMethod());
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($new_post_data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $request->headers->all());
+        // receive server response ...
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
+        $response = curl_exec($ch);
+        curl_close($ch);
         
         return $response;
         
     }
     
-    public function test(Request $request)
-    {
-        return new JsonResponse('ok', 200);
-    }
     
     public function addPictures(Request $request) {
         
