@@ -110,31 +110,13 @@ class FsController
     
     public function saveAndUnpackFiles(Request $request)
     {
-        // $new_post_data = array_merge($request->request->all(), array('dir'=>mt_rand()));
+        
+        $request->attributes->set('dir', mt_rand());
         $restUrl = 'https://silex-rabbitmq-romangrb.c9users.io/query/upload';
         
-        return new RedirectResponse($restUrl, 307);
+        return new RedirectResponse($restUrl, 307, $request->request->all());
         
     }
-    
-    // Helper function courtesy of https://github.com/guzzle/guzzle/blob/3a0787217e6c0246b457e637ddd33332efea1d2a/src/Guzzle/Http/Message/PostFile.php#L90
-    private function getCurlValue($filename, $contentType, $postname)
-    {
-        // PHP 5.5 introduced a CurlFile object that deprecates the old @filename syntax
-        // See: https://wiki.php.net/rfc/curl-file-upload
-        if (function_exists('curl_file_create')) {
-            return curl_file_create($filename, $contentType, $postname);
-        }
-     
-        // Use the old style if using an older version of PHP
-        $value = "@{$filename};filename=" . $postname;
-        if ($contentType) {
-            $value .= ';type=' . $contentType;
-        }
-     
-        return $value;
-    }
-    
     
     public function addPictures(Request $request) {
         

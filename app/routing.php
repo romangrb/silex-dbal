@@ -12,6 +12,4 @@ $app->post('/person/download', "fs.controller:getPictures");
 
 $app->post('/archives/upload', "fs.controller:saveAndUnpackFiles");
 
-// $app->get('/archives/upload', "fs.controller:saveAndUnpackFiles");
-
 $app->post('/test', "fs.controller:test");
