@@ -7,7 +7,11 @@ use MainApp\Service\FsService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Silex\Application;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
 
 
 class FsController
@@ -21,7 +25,16 @@ class FsController
     
     private $FileHelper;
     
-    private $app;
+    private function init_logger()
+    {
+        
+        $stream = new StreamHandler(__DIR__.'/fc_contr.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+        $this->wr = new Logger('fc_contr');
+        $this->wr->pushHandler($stream);
+        $this->wr->pushHandler($firephp);
+        
+    }
     
     public function __construct( CRUDService $CRUDService, FsService $FsService) 
     {
@@ -29,6 +42,7 @@ class FsController
         $this->FileHelper = $FsService;
         $this->toJSON = $JsonResponse;
         $this->app = $app;
+        $this->init_logger();
     }
     
     private function checkRqAttrFields($request) 
@@ -96,28 +110,29 @@ class FsController
     
     public function saveAndUnpackFiles(Request $request)
     {
-        
-        $new_post_data = array_merge($request->request->all(), array('dir'=>mt_rand()));
-        // $new_post_data = array_merge($new_post_data, array('files'=>$request->files->all()));
+        // $new_post_data = array_merge($request->request->all(), array('dir'=>mt_rand()));
         $restUrl = 'https://silex-rabbitmq-romangrb.c9users.io/query/upload';
         
-        // Initialize curl handle
-        $ch = curl_init(); 
+        return new RedirectResponse($restUrl, 307);
         
-        // Set request url
-        curl_setopt($ch, CURLOPT_URL, $restUrl); 
-        // A custom request method. 
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request->getMethod());
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($new_post_data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $request->headers->all());
-        // receive server response ...
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
-        $response = curl_exec($ch);
-        curl_close($ch);
-        
-        return $response;
-        
+    }
+    
+    // Helper function courtesy of https://github.com/guzzle/guzzle/blob/3a0787217e6c0246b457e637ddd33332efea1d2a/src/Guzzle/Http/Message/PostFile.php#L90
+    private function getCurlValue($filename, $contentType, $postname)
+    {
+        // PHP 5.5 introduced a CurlFile object that deprecates the old @filename syntax
+        // See: https://wiki.php.net/rfc/curl-file-upload
+        if (function_exists('curl_file_create')) {
+            return curl_file_create($filename, $contentType, $postname);
+        }
+     
+        // Use the old style if using an older version of PHP
+        $value = "@{$filename};filename=" . $postname;
+        if ($contentType) {
+            $value .= ';type=' . $contentType;
+        }
+     
+        return $value;
     }
     
     
