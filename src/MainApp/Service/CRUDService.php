@@ -20,7 +20,8 @@ class CRUDService
     
     protected $status;
     
-    protected function init_logger(){
+    protected function init_logger()
+    {
         
         $stream = new StreamHandler(__DIR__.'/crud_service.log', Logger::DEBUG);
         $firephp = new FirePHPHandler();
@@ -30,7 +31,8 @@ class CRUDService
         
     }
     
-    public function __construct(connection $connection) {
+    public function __construct(connection $connection) 
+    {
         
         $this->conn = $connection;
         
@@ -46,7 +48,8 @@ class CRUDService
                             
     }
 
-    public function fetchAll() {
+    public function fetchAll() 
+    {
        
         $sql = "        
                 SELECT
@@ -67,7 +70,8 @@ class CRUDService
         return $this->conn->fetchAll($sql);
     }
     
-    public function getPerson( $personAttrArr ) {
+    public function getPerson( $personAttrArr ) 
+    {
         
         $sql = "        
                 SELECT
@@ -94,7 +98,8 @@ class CRUDService
         return $this->conn->fetchAssoc($sql); 
     }
     
-    public function getPersonPage( $offset, $limit ) {
+    public function getPersonPage( $offset, $limit ) 
+    {
         
         $sql = "        
                 SELECT
@@ -123,7 +128,8 @@ class CRUDService
         return $this->conn->fetchAll($sql); 
     }
     
-    private function prepareAddPersonAttr($table_n, $id, $name) {
+    private function prepareAddPersonAttr($table_n, $id, $name) 
+    {
             
         $sql = "INSERT INTO {$this->tables[$table_n]} VALUES(?, ? )";
         $stmt = $this->conn->prepare($sql);
@@ -133,7 +139,8 @@ class CRUDService
         
     }
     
-    public function addProfileFiles($id, $path, $dir) {
+    public function addProfileFiles($id, $path, $dir) 
+    {
         
         $this->status->is_failed = false;
         
@@ -159,28 +166,60 @@ class CRUDService
         
     }
     
-    private function exHandler($e, $num){
+    private function exHandler($e, $num)
+    {
         $info = array('exeption' . $num => $e);
         $this->wr->addError('exeption', $info);
         return $info;
     }
     
-    public function addPerson($pers_attr) {
+    public function savePersonDir($id, $file_path, $files )
+    {
+        $this->status->is_failed = false;
+        
+        $sql = "UPDATE {$this->tables['p']} SET profile_path =?, files =? WHERE person =?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(1, (string) $file_path);
+        $stmt->bindValue(2, (string) $files);
+        $stmt->bindValue(3, (int) $id);
+        
+        try{
+            $this->conn->beginTransaction();
+            if (! $stmt->execute()) throw new Exception("Not updated person id , id : $id");
+        } catch (\Exception $e) {
+            $info = $this->exHandler($e, 1);
+            $this->conn->rollBack();
+            $this->status->txt = $info;
+            $this->status->is_failed = true;
+        }
+        
+        $this->conn->commit();
+        
+        return $this->status;
+        
+    }
+    
+    public function addPerson($pers_attr) 
+    {
     
         $sql = "INSERT INTO {$this->tables['p']} (is_existed) VALUES(?)";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(1, 1);
       
-        try{
+        try
+        {
             $this->conn->beginTransaction();
             $stmt->execute();
             $id = $this->conn->lastInsertId();
             $this->status->id = $id;
             
-            try {
+            try 
+            {
                 foreach ($pers_attr as $key => $value ) $this->prepareAddPersonAttr($key, $id, $value);
             
-            } catch (\Exception $e) {
+            }
+            catch (\Exception $e) 
+            {
                 $info = $this->exHandler($e, 1);
                 $this->conn->rollBack();
                 $this->conn->beginTransaction(); 
@@ -190,7 +229,8 @@ class CRUDService
             
             $this->conn->commit();
         
-        } catch (\Exception $e) {
+        } catch (\Exception $e) 
+        {
             $info = $this->exHandler($e, 2);
             $this->conn->rollBack();
             $this->status->txt = $info;
@@ -201,7 +241,8 @@ class CRUDService
        
     }
     
-    private function statusHandler($is_success = true, $txt = '', $dir = null){
+    private function statusHandler($is_success = true, $txt = '', $dir = null)
+    {
         $obj = new \stdClass();
         $obj->txt = $txt;
         $obj->id = $id;

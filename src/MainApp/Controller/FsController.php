@@ -21,6 +21,8 @@ class FsController
     
     const MAX_FILE_SIZE = 3;
     
+    const REST_UPLOAD_URL = 'https://silex-rabbitmq-romangrb.c9users.io/query/upload';
+    
     private $rq_fields = array('f', 'l', 'm');
     
     private $FileHelper;
@@ -41,7 +43,6 @@ class FsController
         $this->crudService = $CRUDService;
         $this->FileHelper = $FsService;
         $this->toJSON = $JsonResponse;
-        $this->app = $app;
         $this->init_logger();
     }
     
@@ -108,13 +109,31 @@ class FsController
         
     }
     
+    public function syncArchive(Request $request)
+    {
+        $this->wr->addInfo(json_encode($request->request->all()));
+      
+        $result = $this->crudService->savePersonDir($request->get('id'), $request->get('files_path'), json_encode($request->get('files')));
+        
+        if ($result->is_failed) return new JsonResponse('Couldn\'t save path to db please try again', 500);
+        
+        return new JsonResponse('Synchronized data path to person id : ' . $request->get('id'), 200);
+        
+    }
+    
     public function saveAndUnpackFiles(Request $request)
     {
+        $rq_data = array();
+        foreach ($this->rq_fields as $key) {
+            if (is_null($request->get($key))) return new JsonResponse('Please provide all required fields', 201);
+            $rq_data[$key] = $request->get($key);
+        }
         
-        $request->attributes->set('dir', mt_rand());
-        $restUrl = 'https://silex-rabbitmq-romangrb.c9users.io/query/upload';
+        $result = $this->crudService->addPerson($rq_data);
         
-        return new RedirectResponse($restUrl, 307, $request->request->all());
+        if ($result->is_failed) return new JsonResponse('Couldn\'t save user please try again', 500);
+        
+        return new RedirectResponse(self::REST_UPLOAD_URL . '/' . $result->id, 307, $request->request->all());
         
     }
     
